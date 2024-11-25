@@ -47,7 +47,7 @@ Date format: `YYYY-MM-DD`
 ### Security
 
 [Unreleased]: https://github.com/sixafter/semver/compare/v1.1.0...HEAD
-[1.0.0]: https://github.com/sixafter/semver/compare/v1.0.0...v1.1.0
+[1.1.0]: https://github.com/sixafter/semver/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/sixafter/semver/compare/d63ed577e7e841fb2209cfdcf4269fac6a57c85e...v1.0.0
 
 [MUST]: https://datatracker.ietf.org/doc/html/rfc2119
