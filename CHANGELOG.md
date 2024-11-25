@@ -21,11 +21,18 @@ Date format: `YYYY-MM-DD`
 ## [1.1.0] - 2024-10-25
 
 ### Added
+- **FEATURE:** Added support for a `Parsing` interface to allow for custom version parsing.
+- **FEATURE:** Added documentation for the configuration options: `WithStrictAdherence`.
 
 ### Changed
+- **DEBT:** Added additional functional tests to improve code coverage.
+- **DEBT:** Refactored the benchmark tests to correctly measure performance.
+
 ### Deprecated
 ### Removed
 ### Fixed
+- **DEFECT:** Corrected various documentation issues.
+
 ### Security
 
 ---

@@ -19,12 +19,30 @@ func TestParseRange(t *testing.T) {
 		input       string
 		shouldError bool
 	}{
+		// Existing Tests
 		{input: ">1.0.0", shouldError: false},
 		{input: "<=2.0.0", shouldError: false},
 		{input: ">=1.2.3 <2.0.0 || >=3.0.0", shouldError: false},
 		{input: "1.0.0", shouldError: false},
 		{input: "!=1.0.0", shouldError: false},
 		{input: "invalid", shouldError: true},
+
+		// New Tests with Pre-release and Build Metadata
+		{input: ">1.0.0-alpha", shouldError: false},                   // Greater than a pre-release version
+		{input: "<=2.0.0-beta.1", shouldError: false},                 // Less than or equal to a beta pre-release
+		{input: ">=1.0.0-alpha <2.0.0", shouldError: false},           // Range involving pre-release version
+		{input: ">=1.2.3+build.123", shouldError: false},              // Version with build metadata
+		{input: "1.0.0+build.1", shouldError: false},                  // Exact match with build metadata
+		{input: "!=1.0.0-alpha", shouldError: false},                  // Not equal to a pre-release version
+		{input: ">=1.0.0-alpha.1 <1.0.0-alpha.3", shouldError: false}, // Range involving pre-release identifiers
+		{input: "<1.0.0+build.1", shouldError: false},                 // Less than a version with build metadata
+		{input: "1.0.0-beta+exp.sha.5114f85", shouldError: false},     // Specific version with pre-release and build metadata
+		{input: ">2.1.0-rc.1 <2.1.0+build.789", shouldError: false},   // Range between a release candidate and a version with build metadata
+		{input: "1.0.0-alpha+build-metadata", shouldError: false},     // Pre-release version with build metadata
+		{input: ">1.0.0-invalid", shouldError: false},                 // Valid pre-release identifier
+		{input: "<=1.0.0+build...123", shouldError: true},             // Invalid build metadata
+		{input: ">=1.2.3-pre-release <3.0.0", shouldError: false},     // Range with complex pre-release identifier
+		{input: "1.0.0-beta.5+build-xyz", shouldError: false},         // Exact version with pre-release and build metadata
 	}
 
 	for _, test := range tests {

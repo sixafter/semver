@@ -7,6 +7,7 @@ package semver
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -82,6 +83,119 @@ type Version struct {
 	Patch         uint64
 }
 
+var (
+	// DefaultParser is a global, shared instance of a parser. It is safe for concurrent use.
+	DefaultParser Parser
+)
+
+func init() {
+	var err error
+	DefaultParser, err = NewParser()
+	if err != nil {
+		panic(fmt.Sprintf("failed to initialize DefaultParser: %v", err))
+	}
+}
+
+// NewParser creates a new Parser instance with the provided options.
+// This function accepts a variadic number of Option parameters, allowing
+// users to configure the behavior of the Parser as needed.
+//
+// Options can be used to customize various aspects of the Parser, such as
+// specifying custom delimiters, enabling or disabling specific parsing features,
+// or configuring error handling behavior.
+//
+// Example usage:
+//
+//	// Create a Parser with default settings
+//	parser, err := NewParser()
+//	if err != nil {
+//	    log.Fatalf("Failed to create parser: %v", err)
+//	}
+//
+//	// Create a Parser with custom options
+//	parser, err := NewParser(WithDelimiter(','), WithStrictAdherence(true))
+//	if err != nil {
+//	    log.Fatalf("Failed to create custom parser: %v", err)
+//	}
+//
+// Parameters:
+// - options: A variadic list of Option functions used to configure the Parser.
+//
+// Returns:
+// - Parser: An instance of the Parser configured with the specified options.
+// - error: An error if there is an issue creating the Parser, otherwise nil.
+func NewParser(options ...Option) (Parser, error) {
+	// Initialize ConfigOptions with default values.
+	// These defaults include the default alphabet, the default random reader,
+	// and the default length hint for ID generation.
+	configOpts := &ConfigOptions{
+		Strict: true,
+	}
+
+	// Apply provided options to customize the configuration.
+	// Each Option function modifies the ConfigOptions accordingly.
+	for _, opt := range options {
+		opt(configOpts)
+	}
+
+	config, err := buildRuntimeConfig(configOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &parser{
+		config: config,
+	}, nil
+}
+
+// Parser defines an interface for parsing version strings into structured Version objects.
+// Implementations of this interface are responsible for validating and converting a version
+// string into a Version type that can be used programmatically.
+//
+// This interface can be useful when dealing with different version formats or when you need
+// to standardize version parsing across multiple components of an application.
+//
+// Example usage:
+//
+//	var parser Parser = NewParser()
+//	versionStr := "1.2.3-beta+build.123"
+//	version, err := parser.Parse(versionStr)
+//	if err != nil {
+//	    log.Fatalf("Failed to parse version: %v", err)
+//	}
+//	fmt.Printf("Parsed version: %v\n", version)
+//
+// Methods:
+//   - Parse(version string) (Version, error): Parses a version string and returns a Version object.
+//     Returns an error if the version string is invalid or cannot be parsed.
+type Parser interface {
+	// Parse takes a version string as input and converts it into a structured Version object.
+	// The input version string must follow a valid versioning format, and the implementation
+	// of the method is responsible for handling the parsing logic.
+	//
+	// If the provided version string is invalid or cannot be parsed, an error will be returned.
+	//
+	// Parameters:
+	// - version: A string representing the version to be parsed (e.g., "1.2.3", "1.0.0-alpha+build.123").
+	//
+	// Returns:
+	// - Version: A Version object representing the parsed version information.
+	// - error: An error if the version string is invalid or cannot be parsed.
+	//
+	// Example usage:
+	//
+	//    version, err := parser.Parse("1.2.3")
+	//    if err != nil {
+	//        log.Fatalf("Failed to parse version: %v", err)
+	//    }
+	//    fmt.Printf("Parsed version: %v\n", version)
+	Parse(version string) (Version, error)
+}
+
+type parser struct {
+	config *runtimeConfig
+}
+
 // New creates a new Version instance with the specified major, minor, patch components,
 // optional prerelease identifiers, and optional build metadata.
 //
@@ -108,10 +222,7 @@ type Version struct {
 //	)
 //
 //	func main() {
-//	    preRelease := []semver.PrereleaseVersion{
-//	        {partString: "alpha", isNumeric: false},
-//	        {partNumeric: 1, isNumeric: true},
-//	    }
+//	    preRelease := NewPrereleaseVersion("alpha.1")
 //	    buildMetadata := []string{"build", "2024"}
 //
 //	    v := semver.New(1, 2, 3, preRelease, buildMetadata)
@@ -126,6 +237,20 @@ func New(major, minor, patch uint64, preRelease []PrereleaseVersion, buildMetada
 		PreRelease:    preRelease,
 		BuildMetadata: buildMetadata,
 	}
+}
+
+// MustParse is a helper function that parses a version string and panics if invalid.
+//
+// Example:
+//
+//	v := semver.MustParse("1.2.3")
+//	fmt.Println(v) // Output: 1.2.3
+func MustParse(version string) Version {
+	v, err := DefaultParser.Parse(version)
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // Parse parses a version string into a Version struct.
@@ -145,6 +270,26 @@ func New(major, minor, patch uint64, preRelease []PrereleaseVersion, buildMetada
 // The version string must follow semantic versioning format, such as "1.0.0-alpha+001".
 // It returns an error if the version string is invalid.
 func Parse(version string) (Version, error) {
+	return DefaultParser.Parse(version)
+}
+
+// Parse parses a version string into a Version struct.
+//
+// Returns an error if the version string is not a valid semantic version.
+//
+// Example:
+//
+//	v, err := semver.Parse("1.2.3-alpha.1+build.123")
+//	if err != nil {
+//	  fmt.Println("Error:", err)
+//	} else {
+//	  fmt.Println(v) // Output: 1.2.3-alpha.1+build.123
+//	}
+//
+// Parse parses a version string into a Version struct.
+// The version string must follow semantic versioning format, such as "1.0.0-alpha+001".
+// It returns an error if the version string is invalid.
+func (p *parser) Parse(version string) (Version, error) {
 	if len(version) == 0 {
 		return Version{}, ErrEmptyVersionString
 	}
@@ -155,7 +300,7 @@ func Parse(version string) (Version, error) {
 	var err error
 
 	// Parse Major
-	v.Major, index, err = parseNumericIdentifier(version, index, length)
+	v.Major, index, err = p.parseNumericIdentifier(version, index, length)
 	if err != nil {
 		return Version{}, err
 	}
@@ -167,7 +312,7 @@ func Parse(version string) (Version, error) {
 	index++ // Skip '.'
 
 	// Parse Minor
-	v.Minor, index, err = parseNumericIdentifier(version, index, length)
+	v.Minor, index, err = p.parseNumericIdentifier(version, index, length)
 	if err != nil {
 		return Version{}, err
 	}
@@ -179,14 +324,14 @@ func Parse(version string) (Version, error) {
 	index++ // Skip '.'
 
 	// Parse Patch
-	v.Patch, index, err = parseNumericIdentifier(version, index, length)
+	v.Patch, index, err = p.parseNumericIdentifier(version, index, length)
 	if err != nil {
 		return Version{}, err
 	}
 
 	// Parse PreRelease and BuildMetadata if any
 	if index < length {
-		index, err = parsePreReleaseAndBuildMetadata(version, index, length, &v)
+		index, err = p.parsePreReleaseAndBuildMetadata(version, index, length, &v)
 		if err != nil {
 			return Version{}, err
 		}
@@ -201,7 +346,7 @@ func Parse(version string) (Version, error) {
 
 // parseNumericIdentifier parses a numeric identifier from the version string.
 // It returns the parsed value, the updated index, or an error if the parsing fails.
-func parseNumericIdentifier(version string, index int, length int) (uint64, int, error) {
+func (p *parser) parseNumericIdentifier(version string, index int, length int) (uint64, int, error) {
 	if index >= length {
 		return 0, index, ErrUnexpectedEndOfInput
 	}
@@ -230,7 +375,7 @@ func parseNumericIdentifier(version string, index int, length int) (uint64, int,
 
 // parsePreReleaseAndBuildMetadata parses the pre-release and build metadata components from the version string.
 // It updates the Version struct with the parsed values and returns the updated index or an error.
-func parsePreReleaseAndBuildMetadata(version string, index int, length int, v *Version) (int, error) {
+func (p *parser) parsePreReleaseAndBuildMetadata(version string, index int, length int, v *Version) (int, error) {
 	var err error
 
 	// Parse PreRelease if present
@@ -244,7 +389,7 @@ func parsePreReleaseAndBuildMetadata(version string, index int, length int, v *V
 			index++
 		}
 		prerelease := version[start:index]
-		v.PreRelease, err = parsePrerelease(prerelease)
+		v.PreRelease, err = p.parsePrerelease(prerelease)
 		if err != nil {
 			return index, err
 		}
@@ -255,7 +400,7 @@ func parsePreReleaseAndBuildMetadata(version string, index int, length int, v *V
 		index++ // Skip '+'
 		start := index
 		build := version[start:]
-		v.BuildMetadata, err = parseBuildMetadata(build)
+		v.BuildMetadata, err = p.parseBuildMetadata(build)
 		if err != nil {
 			return index, err
 		}
@@ -282,7 +427,7 @@ func parsePreReleaseAndBuildMetadata(version string, index int, length int, v *V
 //	if err != nil {
 //	    // handle error
 //	}
-func parsePrerelease(s string) ([]PrereleaseVersion, error) {
+func (p *parser) parsePrerelease(s string) ([]PrereleaseVersion, error) {
 	if len(s) == 0 {
 		return nil, ErrEmptyPrereleaseIdentifier
 	}
@@ -298,7 +443,7 @@ func parsePrerelease(s string) ([]PrereleaseVersion, error) {
 			}
 			part := s[start:i]
 
-			if !isValidPrereleaseIdentifier(part) {
+			if !p.isValidPrereleaseIdentifier(part) {
 				return nil, ErrInvalidPrereleaseIdentifier
 			}
 			component, err := NewPrereleaseVersion(part)
@@ -309,7 +454,7 @@ func parsePrerelease(s string) ([]PrereleaseVersion, error) {
 
 			prerelease = append(prerelease, component)
 			start = i + 1
-		} else if s[i] > 127 || !isAllowedInIdentifier(s[i]) {
+		} else if s[i] > 127 || !p.isAllowedInIdentifier(s[i]) {
 			return nil, ErrInvalidCharacterInIdentifier
 		}
 	}
@@ -332,7 +477,7 @@ func parsePrerelease(s string) ([]PrereleaseVersion, error) {
 //	if err != nil {
 //	    // handle error
 //	}
-func parseBuildMetadata(s string) ([]string, error) {
+func (p *parser) parseBuildMetadata(s string) ([]string, error) {
 	if len(s) == 0 {
 		return nil, ErrEmptyBuildMetadata
 	}
@@ -347,12 +492,12 @@ func parseBuildMetadata(s string) ([]string, error) {
 				return nil, ErrEmptyBuildMetadata
 			}
 			part := s[start:i]
-			if !isValidBuildIdentifier(part) {
+			if !p.isValidBuildIdentifier(part) {
 				return nil, ErrInvalidBuildMetadataIdentifier
 			}
 			buildMetadata = append(buildMetadata, part)
 			start = i + 1
-		} else if s[i] > 127 || !isAllowedInIdentifier(s[i]) {
+		} else if s[i] > 127 || !p.isAllowedInIdentifier(s[i]) {
 			return nil, ErrInvalidCharacterInIdentifier
 		}
 	}
@@ -365,7 +510,7 @@ func parseBuildMetadata(s string) ([]string, error) {
 //   - Uppercase letters ('A'-'Z')
 //   - Lowercase letters ('a'-'z')
 //   - Hyphen ('-')
-func isAllowedInIdentifier(ch byte) bool {
+func (p *parser) isAllowedInIdentifier(ch byte) bool {
 	return (ch >= '0' && ch <= '9') ||
 		(ch >= 'A' && ch <= 'Z') ||
 		(ch >= 'a' && ch <= 'z') ||
@@ -375,17 +520,17 @@ func isAllowedInIdentifier(ch byte) bool {
 // isValidPrereleaseIdentifier checks if a prerelease identifier is valid.
 // The identifier must not be empty and must contain only allowed characters.
 // Numeric identifiers must not have leading zeros.
-func isValidPrereleaseIdentifier(s string) bool {
+func (p *parser) isValidPrereleaseIdentifier(s string) bool {
 	if len(s) == 0 {
 		return false
 	}
 	for i := 0; i < len(s); i++ {
 		ch := s[i]
-		if !isAllowedInIdentifier(ch) {
+		if !p.isAllowedInIdentifier(ch) {
 			return false
 		}
 	}
-	if isNumeric(s) && s[0] == '0' && len(s) > 1 {
+	if p.config.StrictAdherence() && isNumeric(s) && s[0] == '0' && len(s) > 1 {
 		return false // Leading zeros are not allowed in numeric identifiers
 	}
 
@@ -394,13 +539,13 @@ func isValidPrereleaseIdentifier(s string) bool {
 
 // isValidBuildIdentifier checks if a build metadata identifier is valid.
 // The identifier must not be empty and must contain only allowed characters.
-func isValidBuildIdentifier(s string) bool {
+func (p *parser) isValidBuildIdentifier(s string) bool {
 	if len(s) == 0 {
 		return false
 	}
 	for i := 0; i < len(s); i++ {
 		ch := s[i]
-		if !isAllowedInIdentifier(ch) {
+		if !p.isAllowedInIdentifier(ch) {
 			return false
 		}
 	}
@@ -578,16 +723,10 @@ func (v Version) GreaterThanOrEqual(other Version) bool {
 	return v.Compare(other) >= 0
 }
 
-// MustParse is a helper function that parses a version string and panics if invalid.
+// Config holds the runtime configuration for the Nano ID generator.
 //
-// Example:
-//
-//	v := semver.MustParse("1.2.3")
-//	fmt.Println(v) // Output: 1.2.3
-func MustParse(version string) Version {
-	v, err := Parse(version)
-	if err != nil {
-		panic(err)
-	}
-	return v
+// It is immutable after initialization and provides all the necessary
+// parameters for generating unique IDs efficiently and securely.
+func (p *parser) Config() Config {
+	return p.config
 }
