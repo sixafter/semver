@@ -15,60 +15,57 @@ A Semantic Versioning 2.0.0 compliant parser and utility library written in Go.
 
 The `semver` library offers a comprehensive and efficient solution for working with Semantic Versioning 2.0.0. Key features include:
 
-### Zero Dependencies
-- Lightweight implementation with no external dependencies beyond the standard library.
+- **Zero Dependencies**
+  - Lightweight implementation with no external dependencies beyond the standard library.
 
-### Full Compliance
-- Parses and validates semantic versions according to the [Semantic Versioning 2.0.0](https://semver.org) specification.
+- **Full Compliance**
+  - Parses and validates semantic versions according to the [Semantic Versioning 2.0.0](https://semver.org) specification.
 
-### Version Parsing and Validation
-- Parse semantic version strings into structured `Version` objects.
-- Automatically validate version strings for correctness, including:
+- **Version Parsing and Validation**
+  - Parses semantic version strings into structured `Version` objects.
+  - Automatically validates version strings for correctness, including:
     - Major, minor, and patch components.
     - Pre-release identifiers (e.g., `alpha`, `beta`, `rc.1`).
     - Build metadata (e.g., `build.123`).
     - Enforces no leading zeroes in numeric components.
 
-### Version Comparison
-- Supports comparison of versions using Semantic Versioning rules:
-    - `Compare`: Returns -1, 0, or 1 for less than, equal to, or greater than comparisons.
-    - Convenient helper methods:
-        - `LessThan`, `LessThanOrEqual`
-        - `GreaterThan`, `GreaterThanOrEqual`
-        - `Equal`
-- Correctly handles precedence rules for pre-release versions and build metadata.
+- **Customizable**
+  - Define your own parser.
+  - Strict mode for enforcing strict version format rules.
 
-### Version Ranges
-- Flexible range functionality for evaluating version constraints:
+- **Version Comparison**
+  - Supports comparison of versions using Semantic Versioning rules:
+    - `Compare`: Returns -1, 0, or 1 for less than, equal to, or greater than comparisons.
+    - Convenient helper methods: `LessThan`, `LessThanOrEqual`, `GreaterThan`, `GreaterThanOrEqual`, `Equal`.
+  - Correctly handles precedence rules for pre-release versions and build metadata.
+
+- **Version Ranges**
+  - Flexible range functionality for evaluating version constraints:
     - Define complex version ranges using a familiar syntax (e.g., `">=1.0.0 <2.0.0"`).
     - Determine whether a version satisfies a given range.
     - Combine multiple ranges for advanced constraints (e.g., `">=1.2.3 || <1.0.0-alpha"`).
-- Useful for dependency management, release gating, and compatibility checks.
+  - Useful for dependency management, release gating, and compatibility checks.
 
-### Version Construction
-- Create `Version` instances programmatically using the `NewVersion` constructor.
-- Supports detailed customization of pre-release identifiers and build metadata.
+- **JSON Support**
+  - Seamlessly marshal and unmarshal `Version` objects to and from JSON.
+  - Works with `encoding/json` for easy integration with APIs and configuration files.
 
-### JSON Support
-- Seamlessly marshal and unmarshal `Version` objects to and from JSON.
-- Works with `encoding/json` for easy integration with APIs and configuration files.
-
-### Database Support
-- Compatible with `database/sql`:
+- **Database Support**
+  - Compatible with `database/sql`:
     - Implements `driver.Valuer` to store `Version` in databases.
     - Implements `sql.Scanner` to retrieve `Version` from databases.
 
-### Encoding and Decoding
-- Implements standard Go interfaces:
+- **Encoding and Decoding**
+  - Implements standard Go interfaces:
     - `encoding.TextMarshaler` and `encoding.TextUnmarshaler` for text encoding.
     - `encoding.BinaryMarshaler` and `encoding.BinaryUnmarshaler` for binary encoding.
 
-### Performance Optimizations
-- Efficient parsing and comparison with minimal memory allocations.
-- Designed for high performance with concurrent workloads.
+- **Performance Optimizations**
+  - Efficient parsing and comparison with minimal memory allocations.
+  - Designed for high performance with concurrent workloads.
 
-### Well-Tested
-- Comprehensive test coverage, including:
+- **Well-Tested**
+  - Comprehensive test coverage, including:
     - Functional tests for all features.
     - Benchmarks to validate performance optimizations.
     - Detailed tests for range evaluation, parsing, and edge cases.
@@ -209,13 +206,11 @@ goos: darwin
 goarch: arm64
 pkg: github.com/sixafter/semver
 cpu: Apple M2 Ultra
-BenchmarkParseVersionSerial-24                   1577372               744.4 ns/op           608 B/op         16 allocs/op
-BenchmarkParseVersionConcurrent-24               3696235               337.3 ns/op           608 B/op         16 allocs/op
-BenchmarkParseVersionAllocations-24              7339026               162.1 ns/op           160 B/op          4 allocs/op
-BenchmarkParseVersionLargeSerial-24                  208           5825681 ns/op         4640079 B/op     120000 allocs/op
-BenchmarkParseVersionLargeConcurrent-24              589           2047877 ns/op         4640185 B/op     120000 allocs/op
+BenchmarkParseVersionSerial-24           9170428               123.1 ns/op           128 B/op          2 allocs/op
+BenchmarkParseVersionConcurrent-24      17886765                68.35 ns/op          128 B/op          2 allocs/op
+BenchmarkParseVersionAllocations-24      7576131               157.2 ns/op           144 B/op          4 allocs/op
 PASS
-ok      github.com/sixafter/semver      8.366s
+ok      github.com/sixafter/semver      4.109s
 ```
 </details>
 

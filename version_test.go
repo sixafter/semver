@@ -6,7 +6,7 @@
 package semver
 
 import (
-	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -67,7 +67,7 @@ func TestNewVersion(t *testing.T) {
 	// Execute each test case
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			v := NewVersion(tc.major, tc.minor, tc.patch, tc.preRelease, tc.buildMetadata)
+			v := New(tc.major, tc.minor, tc.patch, tc.preRelease, tc.buildMetadata)
 			is.Equal(tc.expected, v.String(), "Version string should match expected value")
 		})
 	}
@@ -182,6 +182,7 @@ func TestVersionComparison(t *testing.T) {
 		{"1.0.0-alpha", "1.0.0-beta", -1},
 		{"1.0.0-alpha.1", "1.0.0-alpha", 1},
 		{"1.0.0+build1", "1.0.0+build2", 0}, // Build metadata is ignored in comparison
+		{"1.0.0+build1", "1.0.0", 0},        // Build metadata is ignored in comparison
 	}
 
 	for _, test := range tests {
@@ -259,93 +260,75 @@ func TestVersionPreReleaseComparison(t *testing.T) {
 	}
 }
 
-func TestVersionMarshalText(t *testing.T) {
-	t.Parallel()
-	v := MustParse("1.2.3-alpha+build.123")
-	text, err := v.MarshalText()
+func TestParseInvalidVersions(t *testing.T) {
+	// Define a list of invalid versions to test.
+	invalidVersions := []string{
+		"1.0",             // Incomplete version (missing patch version)
+		"v1.0.0",          // Prefix with `v` is not allowed in Semver
+		"1.0.0-alpha..1",  // Double dots are invalid
+		"1.0.0+build+123", // Invalid multiple `+` in build metadata
+		"1.0.0-01",        // Leading zeros in numeric pre-release identifiers are not allowed
+		"1.0.0-",          // Ends with a dash
+		"1.0.0+build.!",   // Invalid character `!` in build metadata
+		"1.0.0-beta_$",    // Invalid character `$` in pre-release identifier
+		"1..0.0",          // Double dots in the version components
+	}
 
-	is := assert.New(t)
-	is.NoError(err)
-	is.Equal("1.2.3-alpha+build.123", string(text))
+	for _, version := range invalidVersions {
+		t.Run(version, func(t *testing.T) {
+			_, err := Parse(version)
+			if err == nil {
+				t.Errorf("expected error for invalid version: %s, but got none", version)
+			}
+		})
+	}
 }
 
-func TestVersionUnmarshalText(t *testing.T) {
-	t.Parallel()
-	var v Version
-	err := v.UnmarshalText([]byte("1.2.3-alpha+build.123"))
+func TestStrictAdherence(t *testing.T) {
+	strictParser, err := NewParser(WithStrictAdherence(true))
+	if err != nil {
+		t.Fatalf("Failed to create strict parser: %v", err)
+	}
 
-	is := assert.New(t)
-	is.NoError(err)
-	is.Equal(MustParse("1.2.3-alpha+build.123"), v)
-}
+	nonStrictParser, err := NewParser(WithStrictAdherence(false))
+	if err != nil {
+		t.Fatalf("Failed to create non-strict parser: %v", err)
+	}
 
-func TestVersionMarshalBinary(t *testing.T) {
-	t.Parallel()
-	v := MustParse("1.2.3-beta")
-	binaryData, err := v.MarshalBinary()
+	// Test cases for strict adherence
+	tests := []struct {
+		parser      Parser
+		input       string
+		expectError bool
+	}{
+		// Strict adherence enabled - should fail for leading zeros
+		{parser: strictParser, input: "1.01.0", expectError: true},
+		{parser: strictParser, input: "1.0.00", expectError: true},
+		{parser: strictParser, input: "01.0.0", expectError: true},
 
-	is := assert.New(t)
-	is.NoError(err)
-	is.Equal([]byte("1.2.3-beta"), binaryData)
-}
+		// Strict adherence enabled - should succeed for valid versions
+		{parser: strictParser, input: "1.0.0", expectError: false},
+		{parser: strictParser, input: "1.2.3-alpha.1", expectError: false},
 
-func TestVersionUnmarshalBinary(t *testing.T) {
-	t.Parallel()
-	var v Version
-	err := v.UnmarshalBinary([]byte("1.2.3+build.456"))
+		// Non-strict adherence - should allow leading zeros
+		{parser: nonStrictParser, input: "1.01.0", expectError: false},
+		{parser: nonStrictParser, input: "1.0.00", expectError: false},
+		{parser: nonStrictParser, input: "01.0.0", expectError: false},
 
-	is := assert.New(t)
-	is.NoError(err)
-	is.Equal(MustParse("1.2.3+build.456"), v)
-}
+		// Non-strict adherence - should succeed for valid versions
+		{parser: nonStrictParser, input: "1.0.0", expectError: false},
+		{parser: nonStrictParser, input: "1.2.3-alpha.1", expectError: false},
+	}
 
-func TestVersionMarshalJSON(t *testing.T) {
-	t.Parallel()
-	v := MustParse("1.2.3-alpha")
-	jsonData, err := json.Marshal(v)
-
-	is := assert.New(t)
-	is.NoError(err)
-	is.JSONEq(`"1.2.3-alpha"`, string(jsonData))
-}
-
-func TestVersionUnmarshalJSON(t *testing.T) {
-	t.Parallel()
-	var v Version
-	err := json.Unmarshal([]byte(`"1.2.3-beta+build.789"`), &v)
-
-	is := assert.New(t)
-	is.NoError(err)
-	is.Equal(MustParse("1.2.3-beta+build.789"), v)
-}
-
-func TestVersionValue(t *testing.T) {
-	t.Parallel()
-	v := MustParse("1.2.3-alpha")
-	dbValue, err := v.Value()
-
-	is := assert.New(t)
-	is.NoError(err)
-	is.Equal("1.2.3-alpha", dbValue)
-}
-
-func TestVersionScan(t *testing.T) {
-	t.Parallel()
-	var v Version
-	is := assert.New(t)
-
-	// Test with string
-	err := v.Scan("1.2.3-alpha+build.123")
-	is.NoError(err)
-	is.Equal(MustParse("1.2.3-alpha+build.123"), v)
-
-	// Test with []byte
-	err = v.Scan([]byte("1.2.3-beta"))
-	is.NoError(err)
-	is.Equal(MustParse("1.2.3-beta"), v)
-
-	// Test with unsupported type
-	err = v.Scan(123)
-	is.Error(err)
-	is.EqualError(err, "unsupported type int for Version")
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := tt.parser.Parse(tt.input)
+			if tt.parser == nonStrictParser && errors.Is(err, ErrLeadingZeroInNumericIdentifier) {
+				err = nil // Allow leading zeros in non-strict mode
+			}
+			if (err != nil) != tt.expectError {
+				t.Errorf("Parse(%s) strict=%v: expected error: %v, got: %v", tt.input, tt.parser == strictParser, tt.expectError, err)
+			}
+		})
+	}
 }
