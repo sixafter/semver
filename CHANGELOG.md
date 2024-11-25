@@ -18,6 +18,17 @@ Date format: `YYYY-MM-DD`
 ### Security
 
 ---
+## [1.1.0] - 2024-10-25
+
+### Added
+
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+---
 ## [1.0.0] - 2024-10-24
 
 ### Added
@@ -28,7 +39,8 @@ Date format: `YYYY-MM-DD`
 ### Fixed
 ### Security
 
-[Unreleased]: https://github.com/sixafter/semver/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/sixafter/semver/compare/v1.1.0...HEAD
+[1.0.0]: https://github.com/sixafter/semver/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/sixafter/semver/compare/d63ed577e7e841fb2209cfdcf4269fac6a57c85e...v1.0.0
 
 [MUST]: https://datatracker.ietf.org/doc/html/rfc2119

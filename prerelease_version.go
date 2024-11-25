@@ -6,17 +6,8 @@
 package semver
 
 import (
-	"errors"
-	"fmt"
 	"strconv"
 	"strings"
-)
-
-// Error messages for prerelease validation.
-var (
-	ErrEmptyPrerelease        = errors.New("prerelease is empty")
-	ErrLeadingZeroInNumeric   = "numeric prerelease version must not contain leading zeroes: %q"
-	ErrInvalidPrereleaseChars = "invalid character(s) found in prerelease: %q"
 )
 
 // PrereleaseVersion represents a semantic version prerelease identifier.
@@ -47,40 +38,25 @@ type PrereleaseVersion struct {
 //	if err != nil {
 //	  fmt.Println("Error:", err) // Output: numeric prerelease version must not contain leading zeroes: "01"
 //	}
-func NewPrereleaseVersion(s string) (PrereleaseVersion, error) {
-	if len(s) == 0 {
-		return PrereleaseVersion{}, errors.New("prerelease is empty")
+func NewPrereleaseVersion(part string) (PrereleaseVersion, error) {
+	if len(part) == 0 {
+		return PrereleaseVersion{}, ErrEmptyPrereleaseIdentifier
 	}
 
-	// Check if the string contains only numbers
-	if containsOnlyNumbers(s) {
-		// Check for leading zeroes
-		if len(s) > 1 && s[0] == '0' {
-			return PrereleaseVersion{}, fmt.Errorf("numeric prerelease version must not contain leading zeroes: %q", s)
+	if isNumeric(part) {
+		if part[0] == '0' && len(part) > 1 {
+			return PrereleaseVersion{}, ErrLeadingZeroInNumericIdentifier
 		}
 
-		// Parse numeric string
-		number, err := strconv.ParseUint(s, 10, 64)
+		x, err := strconv.ParseUint(part, 10, 64)
 		if err != nil {
-			return PrereleaseVersion{}, err
+			return PrereleaseVersion{}, ErrInvalidNumericIdentifier
 		}
 
-		return PrereleaseVersion{
-			partNumeric: number,
-			isNumeric:   true,
-		}, nil
+		return PrereleaseVersion{partNumeric: x, isNumeric: true}, nil
 	}
 
-	// Check if the string contains only alphanumeric characters
-	if containsOnlyAlphanumeric(s) {
-		return PrereleaseVersion{
-			partString: s,
-			isNumeric:  false,
-		}, nil
-	}
-
-	// If neither numeric nor alphanumeric, return an error
-	return PrereleaseVersion{}, fmt.Errorf("invalid character(s) found in prerelease: %q", s)
+	return PrereleaseVersion{partString: part, isNumeric: false}, nil
 }
 
 // IsNumeric checks if the prerelease version is numeric.
@@ -152,46 +128,6 @@ func (v PrereleaseVersion) String() string {
 	if v.isNumeric {
 		return strconv.FormatUint(v.partNumeric, 10)
 	}
+
 	return v.partString
-}
-
-// containsOnlyNumbers checks if the string contains only numeric characters.
-//
-// Example:
-//
-//	fmt.Println(containsOnlyNumbers("123")) // Output: true
-//	fmt.Println(containsOnlyNumbers("abc")) // Output: false
-func containsOnlyNumbers(s string) bool {
-	for i := 0; i < len(s); i++ {
-		if s[i] < '0' || s[i] > '9' {
-			return false
-		}
-	}
-	return true
-}
-
-// containsOnlyAlphanumeric checks if the string contains only ASCII letters and numbers.
-//
-// Example:
-//
-//	fmt.Println(containsOnlyAlphanumeric("abc123")) // Output: true
-//	fmt.Println(containsOnlyAlphanumeric("abc-123")) // Output: false
-func containsOnlyAlphanumeric(s string) bool {
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
-			return false
-		}
-	}
-	return true
-}
-
-// hasLeadingZeroes checks if the string has leading zeroes.
-//
-// Example:
-//
-//	fmt.Println(hasLeadingZeroes("0123")) // Output: true
-//	fmt.Println(hasLeadingZeroes("123"))  // Output: false
-func hasLeadingZeroes(s string) bool {
-	return len(s) > 1 && s[0] == '0'
 }

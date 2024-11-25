@@ -67,7 +67,7 @@ func TestNewVersion(t *testing.T) {
 	// Execute each test case
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			v := NewVersion(tc.major, tc.minor, tc.patch, tc.preRelease, tc.buildMetadata)
+			v := New(tc.major, tc.minor, tc.patch, tc.preRelease, tc.buildMetadata)
 			is.Equal(tc.expected, v.String(), "Version string should match expected value")
 		})
 	}
@@ -347,5 +347,5 @@ func TestVersionScan(t *testing.T) {
 	// Test with unsupported type
 	err = v.Scan(123)
 	is.Error(err)
-	is.EqualError(err, "unsupported type int for Version")
+	is.EqualError(err, "unsupported type for Version")
 }

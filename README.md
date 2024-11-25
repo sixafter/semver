@@ -209,13 +209,13 @@ goos: darwin
 goarch: arm64
 pkg: github.com/sixafter/semver
 cpu: Apple M2 Ultra
-BenchmarkParseVersionSerial-24                   1577372               744.4 ns/op           608 B/op         16 allocs/op
-BenchmarkParseVersionConcurrent-24               3696235               337.3 ns/op           608 B/op         16 allocs/op
-BenchmarkParseVersionAllocations-24              7339026               162.1 ns/op           160 B/op          4 allocs/op
-BenchmarkParseVersionLargeSerial-24                  208           5825681 ns/op         4640079 B/op     120000 allocs/op
-BenchmarkParseVersionLargeConcurrent-24              589           2047877 ns/op         4640185 B/op     120000 allocs/op
+BenchmarkParseVersionSerial-24                   1642676               725.2 ns/op           544 B/op         14 allocs/op
+BenchmarkParseVersionConcurrent-24               4059534               303.9 ns/op           544 B/op         14 allocs/op
+BenchmarkParseVersionAllocations-24              7236553               162.4 ns/op           144 B/op          4 allocs/op
+BenchmarkParseVersionLargeSerial-24                  208           5747548 ns/op         4160079 B/op     110000 allocs/op
+BenchmarkParseVersionLargeConcurrent-24              656           1874606 ns/op         4160163 B/op     110000 allocs/op
 PASS
-ok      github.com/sixafter/semver      8.366s
+ok      github.com/sixafter/semver      8.274s
 ```
 </details>
 
