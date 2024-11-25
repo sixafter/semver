@@ -723,10 +723,9 @@ func (v Version) GreaterThanOrEqual(other Version) bool {
 	return v.Compare(other) >= 0
 }
 
-// Config holds the runtime configuration for the Nano ID generator.
+// Config holds the runtime configuration for the parser.
 //
-// It is immutable after initialization and provides all the necessary
-// parameters for generating unique IDs efficiently and securely.
+// It is immutable after initialization.
 func (p *parser) Config() Config {
 	return p.config
 }
