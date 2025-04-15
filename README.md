@@ -1,15 +1,27 @@
 # semver
 
-[![CI](https://github.com/sixafter/semver/workflows/ci/badge.svg)](https://github.com/sixafter/semver/actions)
-[![Go](https://img.shields.io/github/go-mod/go-version/sixafter/semver)](https://img.shields.io/github/go-mod/go-version/sixafter/semver)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=six-after_semver&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=six-after_semver)
-[![GitHub issues](https://img.shields.io/github/issues/sixafter/semver)](https://github.com/sixafter/semver/issues)
-[![Go Reference](https://pkg.go.dev/badge/github.com/sixafter/semver.svg)](https://pkg.go.dev/github.com/sixafter/semver)
+A Semantic Versioning 2.0.0 compliant parser and utility library written in Go.
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/sixafter/semver)](https://goreportcard.com/report/github.com/sixafter/semver)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](LICENSE)
+[![Go](https://img.shields.io/github/go-mod/go-version/sixafter/semver)](https://img.shields.io/github/go-mod/go-version/sixafter/semver)
+[![Go Reference](https://pkg.go.dev/badge/github.com/sixafter/semver.svg)](https://pkg.go.dev/github.com/sixafter/semver)
+
+## Status
+
+### 🛠️ Build & Test
+
+[![CI](https://github.com/sixafter/semver/workflows/ci/badge.svg)](https://github.com/sixafter/semver/actions)
+[![GitHub issues](https://img.shields.io/github/issues/sixafter/semver)](https://github.com/sixafter/semver/issues)
+
+### 🚦Quality
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=six-after_semver&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=six-after_semver)
 ![CodeQL](https://github.com/sixafter/semver/actions/workflows/codeql-analysis.yaml/badge.svg)
 
-A Semantic Versioning 2.0.0 compliant parser and utility library written in Go.
+### 🚀 Package and Deploy
+
+[![Release](https://github.com/sixafter/semver/workflows/release/badge.svg)](https://github.com/sixafter/semver/actions)
 
 ## Features
 
