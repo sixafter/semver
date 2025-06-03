@@ -3,6 +3,28 @@
 # See the dedicated "version" documentation section.
 version: "2"
 
+linters:
+  settings:
+    cyclop:
+      package-average: 20.0
+
+    funlen:
+      lines: 500
+      statements: 350
+
+    govet:
+      enable-all: true
+
+    makezero:
+      always: true
+
+  exclusions:
+    # Exclude certain directories from linting
+    paths:
+      - "vendor"
+      - "third_party"
+      - "generated"
+
 # Options for analysis running.
 run:
   # The default concurrency value is the number of available CPU.
@@ -16,10 +38,6 @@ run:
   # Include test files or not.
   # Default: true
   tests: false
-  # List of build tags, all linters use it.
-  # Default: [].
-  build-tags: []
-
   # If set we pass it to "go list -mod={option}". From "go help modules":
   # If invoked with -mod=readonly, the go command is disallowed from the implicit
   # automatic updating of go.mod described above. Instead, it fails when any changes
@@ -53,25 +71,3 @@ output:
     - linter
     - severity
     - file # filepath, line, and column.
-
-linters:
-  settings:
-    cyclop:
-      package-average: 20.0
-
-    funlen:
-      lines: 500
-      statements: 350
-
-    govet:
-      enable-all: true
-
-    makezero:
-      always: true
-
-  exclusions:
-    # Exclude certain directories from linting
-    paths:
-      - "vendor"
-      - "third_party"
-      - "generated"
