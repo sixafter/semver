@@ -9,7 +9,7 @@ A Semantic Versioning 2.0.0 compliant parser and utility library written in Go.
 
 ## Status
 
-### 🛠️ Build & Test
+### Build & Test
 
 [![CI](https://github.com/sixafter/semver/workflows/ci/badge.svg)](https://github.com/sixafter/semver/actions)
 [![GitHub issues](https://img.shields.io/github/issues/sixafter/semver)](https://github.com/sixafter/semver/issues)
@@ -19,7 +19,7 @@ A Semantic Versioning 2.0.0 compliant parser and utility library written in Go.
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=six-after_semver&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=six-after_semver)
 ![CodeQL](https://github.com/sixafter/semver/actions/workflows/codeql-analysis.yaml/badge.svg)
 
-### 🚀 Package and Deploy
+### Package and Deploy
 
 [![Release](https://github.com/sixafter/semver/workflows/release/badge.svg)](https://github.com/sixafter/semver/actions)
 

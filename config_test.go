@@ -23,7 +23,6 @@ func TestGetConfig(t *testing.T) {
 	config, ok := gen.(Configuration)
 	is.True(ok, "Parser should implement Configuration interface")
 
-	runtimeConfig := config.Config()
-
-	is.True(runtimeConfig.StrictAdherence(), "Config.StrictAdherence should be true")
+	rc := config.Config()
+	is.True(rc.StrictAdherence(), "Config.StrictAdherence should be true")
 }
