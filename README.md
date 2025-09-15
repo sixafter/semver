@@ -51,7 +51,7 @@ curl -LO https://github.com/sixafter/semver/releases/download/${TAG}/checksums.t
 
 # Verify checksums.txt with cosign
 cosign verify-blob \
-  --key https://raw.githubusercontent.com/sixafter/types/main/cosign.pub \
+  --key https://raw.githubusercontent.com/sixafter/semver/main/cosign.pub \
   --signature checksums.txt.sig \
   checksums.txt
 ```
