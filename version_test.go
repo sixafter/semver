@@ -332,3 +332,32 @@ func TestStrictAdherence(t *testing.T) {
 		})
 	}
 }
+
+func TestInitPanicsOnParserFailure(t *testing.T) {
+	// No t.Parallel(): this test mutates package-level state.
+
+	// Save and restore the original indirection.
+	orig := newParserFunc
+	defer func() {
+		newParserFunc = orig
+		// Restore DefaultParser after test so other tests don’t crash
+		var err error
+		DefaultParser, err = newParserFunc()
+		if err != nil {
+			t.Fatalf("failed to restore DefaultParser: %v", err)
+		}
+	}()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatalf("expected panic during initDefaultParser, got none")
+		}
+	}()
+
+	// Force failure to simulate init panic
+	newParserFunc = func(...Option) (Parser, error) {
+		return nil, errors.New("forced failure for test")
+	}
+
+	initDefaultParser() // Should panic
+}
