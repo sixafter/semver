@@ -18,7 +18,7 @@ Date format: `YYYY-MM-DD`
 ### Security
 
 ---
-## [1.10.2] - 2025-11-07
+## [1.10.3] - 2025-11-07
 
 ### Added
 ### Changed
@@ -180,8 +180,8 @@ Date format: `YYYY-MM-DD`
 ### Fixed
 ### Security
 
-[Unreleased]: https://github.com/sixafter/semver/compare/v1.10.2...HEAD
-[1.10.2]: https://github.com/sixafter/semver/compare/v1.10.1...v1.10.2
+[Unreleased]: https://github.com/sixafter/semver/compare/v1.10.3...HEAD
+[1.10.3]: https://github.com/sixafter/semver/compare/v1.10.1...v1.10.3
 [1.10.1]: https://github.com/sixafter/semver/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/sixafter/semver/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/sixafter/semver/compare/v1.8.0...v1.9.0
