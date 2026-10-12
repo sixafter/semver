@@ -2,7 +2,6 @@
 
 A Semantic Versioning 2.0.0 compliant parser and utility library written in Go.
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/sixafter/semver)](https://goreportcard.com/report/github.com/sixafter/semver)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](LICENSE)
 [![Go](https://img.shields.io/github/go-mod/go-version/sixafter/semver)](https://img.shields.io/github/go-mod/go-version/sixafter/semver)
 [![Go Reference](https://pkg.go.dev/badge/github.com/sixafter/semver.svg)](https://pkg.go.dev/github.com/sixafter/semver)
