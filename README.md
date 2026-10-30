@@ -2,9 +2,12 @@
 
 A Semantic Versioning 2.0.0 compliant parser and utility library written in Go.
 
+Please see the [godoc](https://pkg.go.dev/github.com/sixafter/semver) for detailed documentation. The documentation is also indexed on [Context7](https://context7.com/sixafter/semver) for use with AI coding assistants. Use the library ID `/sixafter/semver` with the Context7 MCP server or any Context7-aware tool.
+
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](LICENSE)
 [![Go](https://img.shields.io/github/go-mod/go-version/sixafter/semver)](https://img.shields.io/github/go-mod/go-version/sixafter/semver)
 [![Go Reference](https://pkg.go.dev/badge/github.com/sixafter/semver.svg)](https://pkg.go.dev/github.com/sixafter/semver)
+[![Context7](https://img.shields.io/badge/Context7-docs-blue?style=flat-square)](https://context7.com/sixafter/semver)
 
 ---
 ## Status
